@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <title>Spring Security Example </title>
+
+    <script src="https://www.gstatic.com/firebasejs/3.0.5/firebase.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
+
+    <meta id="csrfvalue" name="_csrf" th:content="${_csrf.token}"/>
+
+</head>
+<body>
+<script type="module">
+
+   const firebaseConfig = {
+
+   };
+    const app = firebase.initializeApp(firebaseConfig);
+</script>
+
+<script>
+
+    function myFunc(e,email,pass,csrf){
+        e.preventDefault();
+
+        firebase.auth().signInWithEmailAndPassword(email.value, pass.value)
+          .then((userCredential) => {
+            let header = userCredential.uid+":"+userCredential.Xc;
+            fetch("/login", {
+              method: "POST",
+              headers: {
+                "X-CSRF-TOKEN": csrf.content,
+                "Authorization": header
+              }
+            });
+          })
+          .catch((error) => {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+          });
+    }
+</script>
+
+
+<div th:if="${param.error}">
+    Invalid username and password.
+</div>
+<div th:if="${param.logout}">
+    You have been logged out.
+</div>
+<form th:action="@{/login}" method="post">
+    <div><label> User Name : <input type="text" id="username"/> </label></div>
+    <div><label> Password: <input type="password" id="password"/> </label></div>
+    <div><input type="submit" value="Sign In" onclick="myFunc(event,getElementById('username'),getElementById('password'),getElementById('csrfvalue'))"/></div>
+</form>
+
+</body>
+</html>
